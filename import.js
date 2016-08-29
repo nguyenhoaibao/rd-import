@@ -8,9 +8,9 @@ const logger = createLogger();
 
 program
   .version('0.0.1')
-  .option('-f, --file <string>', 'File need to be imported, eg. data/<file_name.xlsx>')
-  .option('-s, --schema <string>', 'Schema object needed for imported file, eg. schema/<schema_name>')
-  .option('-c, --collection <string>', 'Collection to import data')
+  .option('-f, --file <string>', 'Choose file to import, eg. data/<file_name.xlsx> (currently only support xlsx)')
+  .option('-s, --schema <string>', 'Choose schema to import, eg. schema/<schema_name>')
+  .option('-c, --collection <string>', 'Specify collection name to import data')
   .parse(process.argv);
 
 const filePath = program.file;
