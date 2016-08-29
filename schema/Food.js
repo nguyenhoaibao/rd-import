@@ -1,5 +1,6 @@
 const mapFileColumnNameToSchemaName = {
   'Image ID': 'image_id',
+  'Collection Name': 'collection_name',
   'Licensing model': 'licensing_model',
   'Caption DE': 'caption_de',
   'Caption EN': 'caption_en',

@@ -1,4 +1,3 @@
-require('dotenv').config();
 const mongodb = require('./mongodb');
 
 const dbs = {};
@@ -27,6 +26,10 @@ module.exports = {
   },
 
   cleanup() {
-  	return dbs.mongodb.close();
+    return this.stopMongoDb();
+  },
+
+  stopMongoDb() {
+    return dbs.mongodb.close();
   }
-}
+};

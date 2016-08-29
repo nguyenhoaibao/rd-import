@@ -1,23 +1,25 @@
-module.exports = {
-  mapFileRowsToSchemaRows(rows, schema) {
-  	return rows.map((row) => {
-  	  return this.mapFileRowToSchemaRow(row, schema);
-  	});
-  },
+module.exports = function (schema) {
+  return {
+    mapFileRowsToSchemaRows(rows) {
+      return rows.map(row => this.mapFileRowToSchemaRow(row));
+    },
 
-  mapFileRowToSchemaRow(row, schema) {
-    const mappedRow = {};
+    mapFileRowToSchemaRow(row) {
+      const mappedRow = {};
 
-  	Object.keys(row).map((key) => {
-	  const mappedColumn = schema[key];
+    	Object.keys(row).map((key) => {
+  	    const mappedColumn = schema[key];
 
-	  mappedRow[mappedColumn] = row[key];
-  	});
+        if (mappedColumn) {
+          mappedRow[mappedColumn] = row[key];
+        }
+    	});
 
-  	return mappedRow;
-  },
+    	return mappedRow;
+    },
 
-  bulkInsert(db, collectionName, params) {
-  	return db.collection(collectionName).insertMany(params);
+    bulkInsert(db, collectionName, params) {
+    	return db.collection(collectionName).insertMany(params);
+    }
   }
 };

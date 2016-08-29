@@ -1,73 +1,77 @@
 const program = require('commander');
-const util = require('./helpers/util');
+
+const File = require('./helpers/file');
+const utils = require('./helpers/utils');
+const createLogger = require('./helpers/logger');
+
+const logger = createLogger();
 
 program
   .version('0.0.1')
-  .option('-f, --file <string>', 'File need to be imported')
-  .option('-s, --schema <string>', 'Schema object needed for for imported file')
+  .option('-f, --file <string>', 'File need to be imported, eg. data/<file_name.xlsx>')
+  .option('-s, --schema <string>', 'Schema object needed for imported file, eg. schema/<schema_name>')
   .option('-c, --collection <string>', 'Collection to import data')
   .parse(process.argv);
 
-const file = program.file;
-if (!file) {
-  console.log('File is required. Please run --help');
+const filePath = program.file;
+if (!filePath) {
+  logger.error('File path is required. Please run --help');
   process.exit(1);
 }
 
-const filePath = util.getFilePath(file);
-const isFileExists = util.isFileExists(filePath);
+const file = new File(filePath);
+const isFileExists = file.isFileExists();
 
 if (!isFileExists) {
-  console.log(`File "${file}" with path ${filePath} does not exists`);
+  logger.error(`File "${filePath}" does not exists`);
   process.exit(1);
 }
 
-const schemaFile = program.schema;
-if (!schemaFile) {
-  console.log('Schema is required. Please run --help');
+const schemaFilePath = program.schema;
+if (!schemaFilePath) {
+  logger.error('Schema is required. Please run --help');
   process.exit(1);
 }
 
-const schemaFilePath = util.getFilePath(schemaFile);
-const isSchemaExists = util.isFileExists(schemaFilePath);
+const schema = new File(schemaFilePath);
+const isSchemaExists = schema.isFileExists();
 
 if (!isSchemaExists) {
-  console.log(`Schema ${schemaFile} with path ${schemaFilePath} does not exists`);
+  logger.error(`Schema ${schemaFilePath} does not exists`);
   process.exit(1);
 }
 
 const collectionName = program.collection;
 if (!collectionName) {
-  console.log('Collection name is required. Please run --help');
+  logger.error('Collection name is required. Please run --help');
   process.exit(1);
 }
 
 const initializer = require('./libs/initializer');
-const parseFile = require('./helpers/parseFile');
-const schema = require('./schema');
-const schemaObj = require(schemaFilePath);
+
+const schemaObj = require(schema.fileAbsolutePath);
+const schemaHelpers = require('./schema')(schemaObj);
 
 initializer.start()
   .then(() => {
-    return parseFile(filePath);
+    return file.parse();
   })
   .then((rows) => {
-    return schema.mapFileRowsToSchemaRows(rows, schemaObj);
+    return schemaHelpers.mapFileRowsToSchemaRows(rows, schemaObj);
   })
   .then((mappedRows) => {
-    const db = initializer.getMongodbInstance();
+    const mongoDbInstance = initializer.getMongodbInstance();
 
-    return schema.bulkInsert(db, collectionName, mappedRows);
+    return schemaHelpers.bulkInsert(mongoDbInstance, collectionName, mappedRows);
   })
   .then(() => {
     return initializer.cleanup();
   })
   .then(() => {
-    console.log('Import data success');
+    logger.info('Import data success');
     process.exit();
   })
   .catch((error) => {
-    console.log(error);
+    logger.error(error);
     process.exit(1);
   });
-
