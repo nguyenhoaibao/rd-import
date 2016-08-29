@@ -57,7 +57,7 @@ initializer.start()
     return file.parse();
   })
   .then((rows) => {
-    return schemaHelpers.mapFileRowsToSchemaRows(rows, schemaObj);
+    return schemaHelpers.mapFileRowsToSchemaRows(rows);
   })
   .then((mappedRows) => {
     const mongoDbInstance = initializer.getMongodbInstance();
